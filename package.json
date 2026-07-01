@@ -1,0 +1,15 @@
+{
+  "name": "fw-auth",
+  "version": "1.0.0",
+  "description": "JWT authentication module with Express and SQLite",
+  "main": "auth/index.js",
+  "scripts": {
+    "test": "node test-auth.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.0.0",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
