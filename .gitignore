@@ -1,3 +1,8 @@
+.gradle/
+.idea/
+local.properties
+**/build/
+*.iml
 node_modules/
 data/
 *.log
