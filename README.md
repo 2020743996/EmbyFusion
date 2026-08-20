@@ -1,6 +1,18 @@
 # Emby Fusion
 
-Emby Fusion 是一个面向 Android 手机、平板与折叠屏的多 Emby 源聚合播放器原型。它把多个服务器的电影合并成一个片库，并在播放前比较同一影片的所有版本。
+[![最新版本](https://img.shields.io/github/v/release/2020743996/EmbyFusion?display_name=tag&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC)](https://github.com/2020743996/EmbyFusion/releases/latest)
+[![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)](https://github.com/2020743996/EmbyFusion/releases/latest/download/app-release.apk)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+Emby Fusion 是一个面向 Android 手机、平板与折叠屏的多 Emby 源聚合播放器。它把多个服务器的电影合并成一个片库，并在播放前比较同一影片的所有版本。
+
+## 下载
+
+- [下载最新 APK](https://github.com/2020743996/EmbyFusion/releases/latest/download/app-release.apk)
+- [查看全部版本与发布说明](https://github.com/2020743996/EmbyFusion/releases)
+- 支持 Android 8.0（API 26）及以上；新版本可覆盖安装旧版本
+
+当前版本：**v0.1.1**。本次更新重点修复添加 Emby 源后，大型片库可能长时间卡住界面的问题。完整变更见 [Release.md](Release.md)。
 
 ## 已实现
 
@@ -39,7 +51,7 @@ Emby Fusion 是一个面向 Android 手机、平板与折叠屏的多 Emby 源�
 
 ## 功能推演 / 后续迭代
 
-1. **M1 基础可用（当前）**：多源登录、电影聚合、规格比较、直接播放、手机/平板适配。
+1. **M1 基础可用（已完成）**：多源登录、电影聚合、规格比较、直接播放、手机/平板适配。
 2. **M2 播放闭环（已完成）**：播放状态回报、跨源续播、音轨/字幕入口、跨源故障切换和最终 HLS 兼容转码回退。
 3. **M3 智能选源**：启动时测各源延迟和吞吐；读取设备硬解能力；综合“画质、兼容性、网络、服务器负载”动态排序，并支持失败无感切源。
 4. **M4 全媒体库**：剧集按 provider ID + 季/集号聚合；统一收藏、继续观看、搜索与筛选；离线缓存元数据。
@@ -48,7 +60,7 @@ Emby Fusion 是一个面向 Android 手机、平板与折叠屏的多 Emby 源�
 ## 已知边界
 
 - 当前只聚合 `Movie`，还没有聚合剧集。
-- 播放使用 Emby 静态直串；设备不支持的封装/编码不会自动回退转码。
+- 播放优先使用 Emby 静态直串；全部直串版本失败后才会请求 H.264/AAC HLS 兼容转码，暂不支持播放前按设备能力主动选择转码参数。
 - 海报 URL 按 Emby 约定携带 API key；不要在不受信任的日志或第三方图片代理中记录完整 URL。
 - `usesCleartextTraffic=true` 是为局域网 HTTP 服务器保留。只连接 HTTPS 时可改为网络安全配置，进一步限制明文域名。
 
