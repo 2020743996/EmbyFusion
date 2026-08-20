@@ -7,5 +7,5 @@ keystore/
 **/build/
 *.iml
 node_modules/
-data/
+/data/
 *.log

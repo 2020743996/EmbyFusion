@@ -13,8 +13,10 @@ import com.embyfusion.model.SourceVariant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -57,17 +59,18 @@ data class PlayerRequest(
 class FusionViewModel(private val repository: EmbyRepository) : ViewModel() {
     private val _state = MutableStateFlow(FusionUiState())
     val state: StateFlow<FusionUiState> = _state.asStateFlow()
+    private var libraryJob: Job? = null
 
     init {
         viewModelScope.launch {
-            repository.servers.collectLatest { servers ->
+            repository.servers.collect { servers ->
                 _state.update { it.copy(servers = servers) }
-                loadLibrary(servers)
+                scheduleLibraryLoad(servers)
             }
         }
     }
 
-    fun refresh() = viewModelScope.launch { loadLibrary(_state.value.servers) }
+    fun refresh() = scheduleLibraryLoad(_state.value.servers)
 
     fun addServer(request: AddServerRequest, onSuccess: () -> Unit) = viewModelScope.launch {
         _state.update { it.copy(mutatingServer = true, error = null) }
@@ -203,20 +206,28 @@ class FusionViewModel(private val repository: EmbyRepository) : ViewModel() {
         }
     }
 
+    private fun scheduleLibraryLoad(servers: List<EmbyServer>) {
+        libraryJob?.cancel()
+        libraryJob = viewModelScope.launch { loadLibrary(servers) }
+    }
+
     private suspend fun loadLibrary(servers: List<EmbyServer>) {
         if (servers.isEmpty()) {
             _state.update { it.copy(movies = emptyList(), loading = false, warnings = emptyList()) }
             return
         }
         _state.update { it.copy(loading = true, error = null) }
-        runCatching { repository.library(servers) }
-            .onSuccess { result ->
-                _state.update { current ->
-                    val selected = current.selected?.key?.let { key -> result.movies.firstOrNull { it.key == key } }
-                    current.copy(movies = result.movies, selected = selected, warnings = result.warnings, loading = false)
-                }
+        try {
+            val result = repository.library(servers)
+            _state.update { current ->
+                val selected = current.selected?.key?.let { key -> result.movies.firstOrNull { it.key == key } }
+                current.copy(movies = result.movies, selected = selected, warnings = result.warnings, loading = false)
             }
-            .onFailure { error -> _state.update { it.copy(loading = false, error = friendly(error)) } }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Throwable) {
+            _state.update { it.copy(loading = false, error = friendly(error)) }
+        }
     }
 
     private fun friendly(error: Throwable): String {
