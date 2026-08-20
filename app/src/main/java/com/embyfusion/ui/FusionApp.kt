@@ -189,7 +189,7 @@ private enum class Section { LIBRARY, SOURCES }
                 Text("EMBY FUSION", letterSpacing = 2.sp, fontWeight = FontWeight.Black, color = FusionGreen)
                 Text("${state.movies.size} 部影片 · ${state.servers.size} 个源", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
             }
-            IconButton(vm::refresh) { Icon(Icons.Default.Refresh, "刷新") }
+            IconButton(vm::refresh, enabled = !state.loading) { Icon(Icons.Default.Refresh, "刷新") }
             IconButton(addServer) { Icon(Icons.Default.Add, "添加服务器") }
         }
         OutlinedTextField(
@@ -203,7 +203,14 @@ private enum class Section { LIBRARY, SOURCES }
                 fontSize = 12.sp, modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp))
         }
         when {
-            state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Spacer(Modifier.height(16.dp))
+                    Text("正在分页读取并聚合 ${state.servers.size} 个 Emby 源…", fontWeight = FontWeight.SemiBold)
+                    Text("大型片库首次同步可能需要片刻", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                }
+            }
             state.servers.isEmpty() -> EmptyLibrary(addServer)
             state.filteredMovies.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("没有找到影片", color = MaterialTheme.colorScheme.onSurfaceVariant) }
             else -> MovieGrid(state.filteredMovies, vm::select)
